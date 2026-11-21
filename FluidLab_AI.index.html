@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FluidLab AI — Laboratorium Fluidisasi Interaktif</title>
+<style>
+:root{--navy:#10243b;--blue:#1677c8;--cyan:#47c5d8;--bg:#f3f7fb;--ink:#1c2b3a;--muted:#627487;--line:#dce6ef;--green:#16865b}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 Inter,system-ui,Segoe UI,Arial,sans-serif}
+header{background:linear-gradient(120deg,#10243b,#155b88);color:white;padding:25px max(22px,calc((100% - 1180px)/2));}
+.brand{font-size:13px;letter-spacing:2px;text-transform:uppercase;color:#a9e8f1;font-weight:700}.hero{display:flex;justify-content:space-between;gap:20px;align-items:center;flex-wrap:wrap}.hero h1{font-size:clamp(28px,4vw,42px);margin:8px 0}.hero p{margin:0;color:#d7e7f3;max-width:650px}.pill{background:#ffffff1c;border:1px solid #ffffff45;padding:8px 13px;border-radius:30px;font-size:13px}
+main{max-width:1180px;margin:24px auto;padding:0 18px}.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}.tab{border:1px solid var(--line);background:white;padding:10px 16px;border-radius:10px;cursor:pointer;font-weight:650;color:#35516a}.tab.active{background:var(--blue);color:white;border-color:var(--blue)}
+.panel{display:none}.panel.active{display:block}.grid{display:grid;grid-template-columns:1.25fr .75fr;gap:18px}.card{background:white;border:1px solid var(--line);border-radius:16px;padding:19px;box-shadow:0 5px 18px #16324b0a}.card h2,.card h3{margin:0 0 10px}.sub{color:var(--muted);font-size:13px}.simstage{background:linear-gradient(#eaf7fc,#f8fbfd);border:1px solid #d7eaf2;border-radius:14px;padding:12px;min-height:365px;display:flex;align-items:center;justify-content:center}
+canvas{width:100%;height:340px;display:block}.controls{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}.control{background:#f7fafc;padding:12px;border-radius:12px}.control label{font-size:13px;font-weight:700;display:flex;justify-content:space-between}.control input{width:100%;accent-color:var(--blue);margin-top:12px}
+.statrow{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:12px}.stat{background:#f2f7fb;padding:12px;border-radius:12px}.stat b{display:block;font-size:20px;color:#155b88}.stat small{color:var(--muted)}
+.state{padding:10px 12px;border-radius:10px;background:#e9f6ef;color:#126b49;font-weight:700;margin-top:12px}.state.warn{background:#fff4df;color:#946000}.state.high{background:#fdecec;color:#a22b2b}
+button{border:0;background:var(--blue);color:white;padding:10px 15px;border-radius:10px;font-weight:700;cursor:pointer}button.secondary{background:#eaf2f8;color:#24506f}button:hover{filter:brightness(.96)}
+input,textarea,select{font:inherit}textarea{width:100%;min-height:90px;border:1px solid var(--line);border-radius:10px;padding:12px;resize:vertical}.answer{background:#f3f8fc;border-left:4px solid var(--cyan);padding:13px;border-radius:8px;margin-top:12px;white-space:pre-wrap}.chips{display:flex;gap:7px;flex-wrap:wrap;margin:10px 0}.chip{background:#edf5fb;border-radius:30px;padding:6px 10px;font-size:12px;cursor:pointer}
+.lesson{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.lesson article{background:#f6f9fc;border:1px solid var(--line);padding:14px;border-radius:12px}.lesson h3{font-size:16px}.formula{font-family:Georgia,serif;background:#10243b;color:white;padding:16px;border-radius:12px;font-size:19px;text-align:center;margin:12px 0}
+.quizq{padding:14px;background:#f7fafc;border-radius:12px;margin:12px 0}.quizq label{display:block;margin:7px 0}.feedback{font-weight:700;margin-top:10px}
+footer{text-align:center;color:var(--muted);font-size:12px;padding:30px}
+@media(max-width:800px){.grid{grid-template-columns:1fr}.lesson{grid-template-columns:1fr}.controls{grid-template-columns:1fr}.statrow{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<header><div class="hero"><div><div class="brand">Chemical Engineering · Interactive Learning</div><h1>FluidLab AI</h1><p>Laboratorium virtual untuk memahami fluidisasi melalui visualisasi partikel, simulasi kecepatan fluida, pembelajaran mandiri, dan asisten belajar.</p></div><div class="pill">Operasi Teknik Kimia II</div></div></header>
+<main>
+<nav class="tabs">
+<button class="tab active" data-tab="sim">Simulasi 3D</button><button class="tab" data-tab="materi">Materi</button><button class="tab" data-tab="ai">AI Learning Assistant</button><button class="tab" data-tab="kuis">Evaluasi</button>
+</nav>
+<section id="sim" class="panel active">
+<div class="grid">
+<div class="card"><h2>Visualisasi kolom fluidisasi</h2><div class="sub">Atur kecepatan superfisial gas dan amati perubahan perilaku unggun partikel.</div>
+<div class="simstage"><canvas id="bed" width="760" height="440" aria-label="Animasi simulasi unggun partikel"></canvas></div>
+<div class="controls">
+<div class="control"><label>Kecepatan fluida, U <strong><span id="uval">0.08</span> m/s</strong></label><input id="velocity" type="range" min="0.02" max="0.60" step="0.01" value="0.08"></div>
+<div class="control"><label>Diameter partikel <strong><span id="dval">0.50</span> mm</strong></label><input id="diameter" type="range" min="0.2" max="1.2" step="0.05" value="0.5"></div>
+</div>
+<div id="state" class="state">Fixed bed — partikel relatif diam</div>
+<div class="statrow"><div class="stat"><b id="umf">0.18</b><small>Umf acuan (m/s)</small></div><div class="stat"><b id="expansion">1.00×</b><small>Ekspansi unggun</small></div><div class="stat"><b id="regime">Fixed</b><small>Rezim operasi</small></div></div>
+</div>
+<div class="card"><h2>Petunjuk pengamatan</h2><p>1. Mulai dari kecepatan rendah. Partikel membentuk unggun diam (fixed bed).</p><p>2. Naikkan kecepatan hingga mendekati <b>kecepatan minimum fluidisasi (Umf)</b>. Gaya hambat fluida mulai menyeimbangkan berat efektif partikel.</p><p>3. Naikkan kecepatan lebih jauh. Partikel bergerak dan unggun mengembang.</p><p>4. Diskusikan bagaimana ukuran partikel memengaruhi kebutuhan kecepatan fluidisasi.</p><div class="formula">U &lt; Umf : fixed bed<br>U ≈ Umf : incipient fluidization<br>U &gt; Umf : fluidized bed</div><p class="sub">Catatan: Simulasi konseptual untuk pembelajaran. Nilai Umf acuan disederhanakan dan bukan hasil desain atau korelasi eksperimen.</p></div>
+</div>
+</section>
+<section id="materi" class="panel">
+<div class="card"><h2>Konsep dasar fluidisasi</h2><p>Fluidisasi adalah operasi ketika aliran fluida ke atas melalui unggun partikel padat memberikan gaya hambat yang cukup untuk menopang partikel. Unggun kemudian berperilaku menyerupai fluida.</p>
+<div class="lesson">
+<article><h3>Fixed bed</h3><p>Kecepatan fluida masih rendah. Partikel tetap rapat dan tidak mengalami gerakan menyeluruh.</p></article>
+<article><h3>Minimum fluidization</h3><p>Gaya hambat fluida mulai menyeimbangkan berat efektif partikel. Unggun mulai mengembang dan partikel mulai bergerak.</p></article>
+<article><h3>Fluidized bed</h3><p>Kecepatan fluida di atas Umf. Partikel tersuspensi dan bergerak sehingga pencampuran meningkat.</p></article>
+</div>
+<h3 style="margin-top:22px">Parameter penting</h3><ul><li>Kecepatan superfisial fluida (U)</li><li>Kecepatan minimum fluidisasi (Umf)</li><li>Diameter dan densitas partikel</li><li>Densitas dan viskositas fluida</li><li>Penurunan tekanan pada unggun</li></ul>
+<div class="formula">Pada kondisi minimum fluidisasi: ΔP · A ≈ berat efektif partikel</div>
+<p class="sub">Dalam perancangan nyata, Umf ditentukan menggunakan data sifat fluida dan padatan serta korelasi yang sesuai, misalnya persamaan Ergun dan bilangan Archimedes/Reynolds.</p></div>
+</section>
+<section id="ai" class="panel">
+<div class="grid"><div class="card"><h2>AI Learning Assistant</h2><p class="sub">Ajukan pertanyaan tentang konsep, fenomena, dan perhitungan dasar fluidisasi. Tutor demo ini menggunakan basis penjelasan pembelajaran yang telah disiapkan; belum terhubung ke layanan AI eksternal.</p>
+<div class="chips"><span class="chip" data-q="Apa perbedaan fixed bed dan fluidized bed?">Fixed vs fluidized bed</span><span class="chip" data-q="Jelaskan kecepatan minimum fluidisasi (Umf).">Apa itu Umf?</span><span class="chip" data-q="Mengapa ukuran partikel memengaruhi fluidisasi?">Pengaruh ukuran partikel</span><span class="chip" data-q="Apa aplikasi fluidisasi di industri?">Aplikasi industri</span></div>
+<textarea id="question" placeholder="Contoh: Mengapa partikel mulai bergerak saat kecepatan fluida meningkat?"></textarea><button id="ask" style="margin-top:10px">Tanyakan kepada tutor</button><div id="answer" class="answer" aria-live="polite">Jawaban tutor akan muncul di sini.</div></div>
+<div class="card"><h2>Cara menggunakan tutor</h2><ol><li>Tulis pertanyaan dengan jelas.</li><li>Gunakan pertanyaan lanjutan untuk memperdalam konsep.</li><li>Bandingkan jawaban dengan buku ajar dan materi kuliah.</li></ol><p class="sub">Penting: fitur ini merupakan prototipe demonstrasi tutor berbasis aturan/kata kunci, bukan model GenAI live. Untuk penggunaan produksi, hubungkan backend aman ke API model AI dan validasi jawaban teknik.</p></div></div>
+</section>
+<section id="kuis" class="panel"><div class="card"><h2>Evaluasi pemahaman</h2><p class="sub">Pilih satu jawaban untuk setiap pertanyaan, lalu periksa hasilnya.</p>
+<div class="quizq"><b>1. Apa yang dimaksud dengan Umf?</b><label><input type="radio" name="q1" value="a"> Kecepatan maksimum fluida</label><label><input type="radio" name="q1" value="b"> Kecepatan saat unggun mulai terfluidisasi</label><label><input type="radio" name="q1" value="c"> Diameter minimum partikel</label></div>
+<div class="quizq"><b>2. Apa yang terjadi ketika U jauh lebih kecil daripada Umf?</b><label><input type="radio" name="q2" value="a"> Partikel membentuk fixed bed</label><label><input type="radio" name="q2" value="b"> Semua partikel terbawa keluar</label><label><input type="radio" name="q2" value="c"> Unggun mengalami ekspansi maksimum</label></div>
+<div class="quizq"><b>3. Salah satu manfaat fluidisasi dalam industri adalah...</b><label><input type="radio" name="q3" value="a"> Menghilangkan kebutuhan kontak fluida-padatan</label><label><input type="radio" name="q3" value="b"> Meningkatkan pencampuran dan perpindahan panas</label><label><input type="radio" name="q3" value="c"> Membuat partikel tidak bergerak</label></div>
+<button id="grade">Periksa jawaban</button><div id="score" class="feedback" aria-live="polite"></div></div></section>
+</main>
+<footer>FluidLab AI · Prototipe pembelajaran interaktif · Untuk tujuan edukasi, bukan alat desain proses industri.</footer>
+<script>
+const tabs=document.querySelectorAll('.tab');tabs.forEach(b=>b.onclick=()=>{tabs.forEach(x=>x.classList.remove('active'));document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.getElementById(b.dataset.tab).classList.add('active')});
+const canvas=document.getElementById('bed'),ctx=canvas.getContext('2d');let particles=[];for(let i=0;i<105;i++)particles.push({x:105+Math.random()*550,y:290+Math.random()*105,r:5+Math.random()*4,vx:0,vy:0,phase:Math.random()*6.28});
+const vel=document.getElementById('velocity'),dia=document.getElementById('diameter');let U=.08,Umf=.18,mode='fixed';
+function update(){U=+vel.value;let d=+dia.value;Umf=.18*Math.pow(d/.5,1.35);document.getElementById('uval').textContent=U.toFixed(2);document.getElementById('dval').textContent=d.toFixed(2);document.getElementById('umf').textContent=Umf.toFixed(2);
+let ratio=U/Umf;mode=ratio<.9?'fixed':ratio<1.12?'incipient':'fluidized';let label=mode==='fixed'?'Fixed bed — partikel relatif diam':mode==='incipient'?'Minimum fluidization — unggun mulai bergerak':'Fluidized bed — partikel bergerak dan unggun mengembang';let st=document.getElementById('state');st.textContent=label;st.className='state'+(mode==='fluidized'?'':mode==='incipient'?' warn':'');document.getElementById('regime').textContent=mode==='fixed'?'Fixed':mode==='incipient'?'Minimum':'Fluidized';document.getElementById('expansion').textContent=(1+Math.max(0,ratio-1)*.55).toFixed(2)+'×'}
+vel.oninput=update;dia.oninput=update;update();
+function draw(t){ctx.clearRect(0,0,760,440);ctx.fillStyle='#dff2f8';ctx.fillRect(90,28,580,370);ctx.fillStyle='#9ed9e5';ctx.fillRect(95,385,570,8);ctx.strokeStyle='#367e9c';ctx.lineWidth=5;ctx.strokeRect(90,28,580,370);ctx.fillStyle='#235d78';ctx.font='15px Arial';ctx.fillText('Outlet fluida',105,20);ctx.fillText('Distributor',105,420);
+let ratio=U/Umf,expansion=1+Math.max(0,ratio-1)*.55,bedTop=385-(105*expansion);ctx.fillStyle='#b9c6ce';ctx.fillRect(95,bedTop,570,385-bedTop);
+for(let i=0;i<particles.length;i++){let p=particles[i],r=p.r;let base=385-(i%13)*7;let fluid=Math.max(0,ratio-.8);if(mode==='fixed'){p.y+=(base-p.y)*.04;p.x+=(105+(i*47)%540-p.x)*.02}else{p.y+=Math.sin(t*.002+p.phase)*(.5+fluid*2);p.y-=Math.abs(Math.sin(t*.003+p.phase))*fluid*1.2;p.x+=Math.sin(t*.0015+p.phase)*fluid*1.2;if(p.y<bedTop+5)p.y=bedTop+5+Math.random()*18;if(p.y>380)p.y=360+Math.random()*22}
+p.x=Math.max(103,Math.min(657,p.x));ctx.beginPath();ctx.arc(p.x,p.y,r,0,Math.PI*2);ctx.fillStyle=['#d49a52','#c27c3b','#e1b36c'][i%3];ctx.fill();ctx.strokeStyle='#8e5b2b';ctx.lineWidth=1;ctx.stroke()}
+if(mode!=='fixed'){for(let i=0;i<7;i++){let x=145+i*78;ctx.beginPath();ctx.moveTo(x,380);ctx.lineTo(x,330-(ratio-1)*12);ctx.strokeStyle='#3ca9ca';ctx.lineWidth=2;ctx.stroke();ctx.beginPath();ctx.arc(x,330-(ratio-1)*12,4,0,7);ctx.fillStyle='#3ca9ca';ctx.fill()}}
+ctx.fillStyle='#164b67';ctx.font='bold 17px Arial';ctx.fillText(mode==='fixed'?'FIXED BED':mode==='incipient'?'MINIMUM FLUIDIZATION':'FLUIDIZED BED',250,55);requestAnimationFrame(draw)}
+requestAnimationFrame(draw);
+function tutor(q){let s=q.toLowerCase();if(s.includes('umf')||s.includes('minimum'))return 'Kecepatan minimum fluidisasi (Umf) adalah kecepatan superfisial fluida ketika gaya hambat ke atas mulai menyeimbangkan berat efektif partikel dalam unggun. Di bawah Umf, unggun cenderung tetap; pada Umf, unggun mulai terfluidisasi. Nilai aktual dipengaruhi ukuran dan densitas partikel, sifat fluida, serta geometri sistem.';
+if(s.includes('fixed')||s.includes('fluidized')||s.includes('perbedaan'))return 'Pada fixed bed, partikel relatif diam dan tersusun sebagai unggun padat. Ketika kecepatan fluida mencapai Umf, gaya drag mendukung berat efektif partikel. Di atas Umf, partikel bergerak, unggun mengembang, dan pencampuran meningkat.';
+if(s.includes('ukuran')||s.includes('diameter')||s.includes('partikel'))return 'Ukuran partikel memengaruhi gaya berat, luas permukaan, dan hambatan aliran. Secara umum, partikel yang lebih besar atau lebih rapat membutuhkan kondisi aliran yang berbeda untuk mulai terfluidisasi. Hubungan kuantitatif harus dihitung menggunakan korelasi yang sesuai, misalnya Ergun.';
+if(s.includes('industri')||s.includes('aplikasi'))return 'Fluidisasi digunakan antara lain pada catalytic cracking, pembakaran unggun terfluidisasi, pengeringan partikel, pelapisan, dan proses gasifikasi. Keunggulannya adalah kontak gas-padatan yang baik, pencampuran, serta perpindahan panas yang relatif tinggi.';
+if(s.includes('kecepatan')||s.includes('meningkat')||s.includes('bergerak'))return 'Ketika kecepatan fluida meningkat, gaya hambat (drag) pada partikel juga meningkat. Saat gaya ini cukup untuk menyeimbangkan berat efektif partikel, unggun mencapai kondisi minimum fluidisasi. Peningkatan kecepatan lebih lanjut membuat partikel bergerak dan unggun mengembang.';
+return 'Untuk menganalisis pertanyaan ini, identifikasi terlebih dahulu kondisi unggun (fixed bed atau fluidized bed), kecepatan superfisial U, dan kecepatan minimum fluidisasi Umf. Bandingkan U dengan Umf, lalu jelaskan keseimbangan gaya antara drag fluida dan berat efektif partikel. Coba ajukan pertanyaan yang lebih spesifik agar tutor dapat membantu lebih terarah.'}
+document.getElementById('ask').onclick=()=>{let q=document.getElementById('question').value.trim();if(!q)return;document.getElementById('answer').textContent=tutor(q)};
+document.querySelectorAll('.chip').forEach(c=>c.onclick=()=>{document.getElementById('question').value=c.dataset.q;document.getElementById('answer').textContent=tutor(c.dataset.q)});
+document.getElementById('grade').onclick=()=>{let keys={q1:'b',q2:'a',q3:'b'},score=0;for(let k in keys){let v=document.querySelector('input[name='+k+']:checked');if(v&&v.value===keys[k])score++}document.getElementById('score').textContent='Skor Anda: '+score+'/3. '+(score===3?'Sangat baik!':score===2?'Bagus, pelajari kembali jawaban yang belum tepat.':'Pelajari kembali materi dan coba lagi.')};
+</script>
+</body></html>
